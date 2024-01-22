@@ -5,8 +5,11 @@ let audiocontext
 let audiodata
 let rec
 
+let mediaRecorder;
+let audioChunks = [];
 
 var recordRTC = null;
+let durations = []
 ws.addEventListener("message", (event) => {
     audiocontext.decodeAudioData(event.data).then(
         decodedaudio =>{
@@ -15,6 +18,7 @@ ws.addEventListener("message", (event) => {
             playSound.buffer = audiodata;
             playSound.connect(audiocontext.destination);
             playSound.start(audiocontext.currentTime);
+            durations.push(decodedaudio.duration)
         }
     )
 });
@@ -37,40 +41,87 @@ function onError(err){
 
 
 call.onclick = function(){
-    audiocontext = new AudioContext()
-    ws.send("hi")
-
-}
-
-let digits = document.getElementsByClassName("digit")
-for(let i = 0;i<digits.length;i++){
-    digits[i].addEventListener('click',function(){
-        if(digits[i].innerText.split("\n")[0] == 1 || digits[i].innerText.split("\n")[0] == 2 || digits[i].innerText.split("\n")[0] == 3){
-            ws.send(parseInt(digits[i].innerText.split("\n")[0]))
-            makecall()
+    let call_func = call.getAttribute("class");
+    console.log(call_func)
+    if(call_func == "call"){
+        audiocontext = new AudioContext()
+        ws.send("hi")
+        let digits = document.getElementsByClassName("digit")
+        for(let i = 0;i<digits.length;i++){
+            digits[i].addEventListener('click',function(){
+                if(digits[i].innerText.split("\n")[0] == 1 || digits[i].innerText.split("\n")[0] == 2 || digits[i].innerText.split("\n")[0] == 3){
+                    ws.send(parseInt(digits[i].innerText.split("\n")[0]))
+                    makecall()
+                }
+            })
         }
+        
+        call.setAttribute("class","endcall")
+        let icon = document.getElementsByClassName("icon")[0]
+        call.style.backgroundColor = "red"
+        icon.style.backgroundColor = "red"
+    }else{
+        let icon = document.getElementsByClassName("icon")[0]
+        call.style.backgroundColor = "#66bb6a"
+        icon.style.backgroundColor = "#66bb6a"
+        call.setAttribute("class","call")
+        mediaRecorder.stop()
 
 
-    })
+    }
 }
 
-async function makecall(){
+
     navigator.mediaDevices.getUserMedia({
         audio: true
     }).then(async function(stream) {
-        let recorder = RecordRTC(stream, {
-            type: 'audio',
-            recorderType: StereoAudioRecorder
-        });
-        recorder.startRecording();
+        mediaRecorder = new MediaRecorder(stream);
 
-        const sleep = m => new Promise(r => setTimeout(r, m));
-        await sleep(3000);
+        mediaRecorder.ondataavailable = function (e) {
+            if (e.data.size > 0) {
+              audioChunks.push(e.data);
+            }
+        };
+    
+          // Event handler when recording is stopped
+        mediaRecorder.onstop = function () {
+            // Create a blob from the audio chunks
+            const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+            console.log("asds")
+            // Create a download link for the audio file
+            // const audioUrl = URL.createObjectURL(audioBlob);
+            // const downloadLink = document.createElement('a');
+            // downloadLink.href = audioUrl;
+            // downloadLink.download = 'recorded_audio.wav';
+            // document.body.appendChild(downloadLink);
+            // downloadLink.click();
+            // document.body.removeChild(downloadLink);
 
-        recorder.stopRecording(function() {
-            let blob = recorder.getBlob();
-            ws.send(blob)
-        });
+            // Generate a unique filename
+            const uniqueFilename = `recording_${Date.now()}.wav`;
+
+            // Create a FormData object to send the file
+            const formData = new FormData();
+            formData.append('audio', audioBlob, uniqueFilename);
+
+            // Send the audio file to the Flask server
+            fetch(window.location.origin+'/upload', {
+            method: 'POST',
+            body: formData
+          })
+            .then(response => response.json())
+            .then(data => {
+              console.log('Server response:', data);
+            })
+            .catch(error => {
+              console.error('Error sending audio to server:', error);
+            });
+          };
     });
 
+function makecall(){
+    setTimeout(() => {
+            console.log('Audio context is closed');
+            mediaRecorder.start()
+    }, durations[1] * 1000);
 }
