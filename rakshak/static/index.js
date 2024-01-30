@@ -1,3 +1,4 @@
+console.log(recordingLength)
 let url = `ws://${window.location.host}/voice`
 var ws = new WebSocket(url)
 ws.binaryType = "arraybuffer"
@@ -65,63 +66,82 @@ call.onclick = function(){
         call.style.backgroundColor = "#66bb6a"
         icon.style.backgroundColor = "#66bb6a"
         call.setAttribute("class","call")
-        mediaRecorder.stop()
-
+        stopcall()
 
     }
 }
 
 
-    navigator.mediaDevices.getUserMedia({
-        audio: true
-    }).then(async function(stream) {
-        mediaRecorder = new MediaRecorder(stream);
+    // navigator.mediaDevices.getUserMedia({
+    //     audio: true
+    // }).then(async function(stream) {
+    //     mediaRecorder = new MediaRecorder(stream);
 
-        mediaRecorder.ondataavailable = function (e) {
-            if (e.data.size > 0) {
-              audioChunks.push(e.data);
-            }
-        };
+    //     mediaRecorder.ondataavailable = function (e) {
+    //         if (e.data.size > 0) {
+    //           audioChunks.push(e.data);
+    //         }
+    //     };
     
-          // Event handler when recording is stopped
-        mediaRecorder.onstop = function () {
-            // Create a blob from the audio chunks
-            const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
-            console.log("asds")
-            // Create a download link for the audio file
-            // const audioUrl = URL.createObjectURL(audioBlob);
-            // const downloadLink = document.createElement('a');
-            // downloadLink.href = audioUrl;
-            // downloadLink.download = 'recorded_audio.wav';
-            // document.body.appendChild(downloadLink);
-            // downloadLink.click();
-            // document.body.removeChild(downloadLink);
+    //       // Event handler when recording is stopped
+    //     mediaRecorder.onstop = function () {
+    //         // Create a blob from the audio chunks
+    //         const audioBlob = new Blob(audioChunks, { type: 'audio/wav'});
+    //         // Create a download link for the audio file
+    //         // const audioUrl = URL.createObjectURL(audioBlob);
+    //         // const downloadLink = document.createElement('a');
+    //         // downloadLink.href = audioUrl;
+    //         // downloadLink.download = 'recorded_audio.wav';
+    //         // document.body.appendChild(downloadLink);
+    //         // downloadLink.click();
+    //         // document.body.removeChild(downloadLink);
 
-            // Generate a unique filename
-            const uniqueFilename = `recording_${Date.now()}.wav`;
+    //         // Generate a unique filename
+    //         const audioData = { audioContent: audioBlob };
+    //         var myHeaders = new Headers();
+                        
+    //         const uniqueFilename = `recording_${Date.now()}.mp3`;
 
-            // Create a FormData object to send the file
-            const formData = new FormData();
-            formData.append('audio', audioBlob, uniqueFilename);
+    //         // Create a FormData object to send the file
+    //         const formData = new FormData();
+    //         formData.append('audio', audioBlob, uniqueFilename);
 
-            // Send the audio file to the Flask server
-            fetch(window.location.origin+'/upload', {
-            method: 'POST',
-            body: formData
-          })
-            .then(response => response.json())
-            .then(data => {
-              console.log('Server response:', data);
-            })
-            .catch(error => {
-              console.error('Error sending audio to server:', error);
-            });
-          };
-    });
+    //         // Send the audio file to the Flask server
+    //         fetch(window.location.origin+'/upload', {
+    //         method: 'POST',
+    //         body: formData
+    //         })
+    //         .then(response => response.json())
+    //         .then(data => {
+    //           console.log('Server response:', data);
+    //         })
+    //         .catch(error => {
+    //           console.error('Error sending audio to server:', error);
+    //         });
 
-function makecall(){
-    setTimeout(() => {
-            console.log('Audio context is closed');
-            mediaRecorder.start()
-    }, durations[1] * 1000);
-}
+    //         // Base64 Convert
+    //         blobToBase64(audioBlob)
+    //       };
+    // });
+
+// function makecall(){
+//     setTimeout(() => {
+//             console.log('Audio context is closed');
+//             mediaRecorder.start()
+//     }, durations[1] * 1000);
+// }
+
+
+
+//   const blobToBase64 = (blob) => {
+//     var reader = new FileReader();
+//     reader.readAsDataURL(blob);
+//     reader.onloadend = function () {
+//       let base64data = reader.result;
+//       console.log("Base64dataIs :: ", base64data);
+//       let arrays = base64data.split(",")
+//       asr_mr_to_en(arrays[1])
+//       return base64data;
+//     };
+//   };
+

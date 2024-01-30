@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Audio to Base64</title>
+</head>
+<body>
+<h1>Audio to Base64</h1>
+<button id="startRecording">Start Recording</button>
+<button id="stopRecording" style="display: none;">Stop Recording</button>
+<div id="audioPlayer" style="display: none;">
+  <audio controls id="audioControl">
+    Your browser does not support the audio element.
+  </audio>
+</div>
+<div id="base64Display" style="display: none;">
+  <h2>Base64 Audio:</h2>
+  <textarea id="audioBase64" rows="10" cols="50"></textarea>
+</div>
+
+<script>
+let mediaRecorder;
+let chunks = [];
+
+// Function to start recording
+function startRecording() {
+  navigator.mediaDevices.getUserMedia({ audio: true })
+    .then(function (stream) {
+      mediaRecorder = new MediaRecorder(stream);
+      mediaRecorder.start();
+      console.log('Recording started');
+      
+      mediaRecorder.ondataavailable = function (event) {
+        chunks.push(event.data);
+      }
+    }).catch(function (err) {
+      console.error('Error accessing microphone:', err);
+    });
+}
+
+// Function to stop recording
+function stopRecording() {
+  mediaRecorder.stop();
+  console.log('Recording stopped');
+}
+
+// Function to convert audio data to Base64 string
+function audioToBase64() {
+  const blob = new Blob(chunks, { type: 'audio/wav' });
+  const reader = new FileReader();
+  reader.readAsDataURL(blob);
+  reader.onloadend = function () {
+    const base64data = reader.result.split(',')[1]; // Remove the data URL prefix
+    console.log('Base64 audio:', base64data);
+    // Display the Base64 audio or send it to a server for further processing
+    document.getElementById('audioBase64').value = base64data;
+    document.getElementById('base64Display').style.display = 'block';
+  };
+}
+
+// Event listeners for start and stop recording buttons
+document.getElementById('startRecording').addEventListener('click', function () {
+  startRecording();
+  document.getElementById('startRecording').style.display = 'none';
+  document.getElementById('stopRecording').style.display = 'inline-block';
+});
+
+document.getElementById('stopRecording').addEventListener('click', function () {
+  stopRecording();
+  document.getElementById('stopRecording').style.display = 'none';
+  document.getElementById('audioPlayer').style.display = 'block';
+  document.getElementById('audioControl').src = URL.createObjectURL(new Blob(chunks, { type: 'audio/wav' }));
+  document.getElementById('audioControl').play();
+  audioToBase64();
+});
+
+</script>
+<script src="index.js"></script>
+</body>
+</html>
