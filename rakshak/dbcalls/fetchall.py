@@ -1,9 +1,6 @@
-from pymongo import MongoClient
-client = MongoClient('localhost',27017)
+from rakshak.dbcalls.dbconfig import client,db,calls
 
-db = client['sankatrakshak']
 
-calls = db.calls
 def fetchall():
     callsindb = calls.find()
     all_calls = []

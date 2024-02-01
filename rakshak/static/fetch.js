@@ -5,7 +5,7 @@ myHeaders.append("Connection", "keep-alive");
 myHeaders.append("Content-Type", "application/json");
 myHeaders.append("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36");
 
-function asr_mr_to_en(audio){
+function asr_en(audio){
   var raw = {
     "pipelineTasks": [
       {
@@ -14,18 +14,7 @@ function asr_mr_to_en(audio){
           "language": {
             "sourceLanguage": "en"
           },
-          "serviceId":  
-"ai4bharat/whisper-medium-en--gpu--t4"
-        }
-      },
-      {
-        "taskType": "translation",
-        "config": {
-          "language": {
-            "sourceLanguage": "mr",
-            "targetLanguage": "en"
-          },
-          "serviceId": "ai4bharat/indictrans-v2-all-gpu--t4"
+          "serviceId":"ai4bharat/whisper-medium-en--gpu--t4"
         }
       }
     ],
@@ -46,10 +35,33 @@ function asr_mr_to_en(audio){
   };
   
   fetch("https://dhruva-api.bhashini.gov.in/services/inference/pipeline", requestOptions)
-    .then(response => response.text())
-    .then(result => console.log(result))
+    .then(response => response.json())
+    .then(result => send_to_pipeline(result))
     .catch(error => console.log('error', error));
 }
 
+
+function send_to_pipeline(result){
+    let asr_text = result.pipelineResponse[0].output[0].source
+    if(asr_text){
+      //  send to ner and zero_shot
+      console.log(asr_text)
+      let sent_data = {
+        'text': asr_text
+      }
+      var headers = new Headers()
+      headers.append("Content-Type", "application/json");
+      var requestOptions = {
+        method: 'POST',
+        body: JSON.stringify(sent_data),
+        headers:headers
+      };
+      fetch(window.location.origin+"/pipeline", requestOptions)
+      .then(response => response.json())
+      .then(result => console.log(result))
+      .catch(error => console.log('error', error));
+    }
+
+}
 
 // asr_mr_to_en()

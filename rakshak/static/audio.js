@@ -146,7 +146,7 @@ const blobToBase64 = (blob) => {
       let base64data = reader.result;
       console.log("Base64dataIs :: ", base64data);
       let arrays = base64data.split(",")
-      asr_mr_to_en(arrays[1])
+      asr_en(arrays[1])
       return base64data;
     };
 };
@@ -227,5 +227,21 @@ function stopcall(){
 
     blobToBase64(blob)
 
+    const formData = new FormData();
+    const uniqueFilename = `recording_${Date.now()}.mp3`;
+    formData.append('audio', blob, uniqueFilename);
 
-}
+            // Send the audio file to the Flask server
+    fetch(window.location.origin+'/upload', {
+            method: 'POST',
+            body: formData
+    }).then(response => response.json())
+        .then(data => {
+              console.log('Server response:', data);
+            })
+            .catch(error => {
+              console.error('Error sending audio to server:', error);
+            });
+    }
+
+

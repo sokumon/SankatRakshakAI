@@ -11,3 +11,4 @@ from rakshak.routes import insert
 from rakshak.routes import createcall
 from rakshak.routes import voice
 from rakshak.routes import upload
+from rakshak.routes import pipeline

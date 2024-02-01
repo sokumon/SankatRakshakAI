@@ -1,4 +1,3 @@
-console.log(recordingLength)
 let url = `ws://${window.location.host}/voice`
 var ws = new WebSocket(url)
 ws.binaryType = "arraybuffer"
