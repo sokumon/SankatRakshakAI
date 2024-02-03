@@ -58,10 +58,16 @@ function send_to_pipeline(result){
       };
       fetch(window.location.origin+"/pipeline", requestOptions)
       .then(response => response.json())
-      .then(result => console.log(result))
+      .then(result => reload_check(result))
       .catch(error => console.log('error', error));
     }
 
 }
 
+
+function reload_check(result){
+  if(result.status === "success"){
+    window.location.reload()
+  }
+}
 // asr_mr_to_en()
